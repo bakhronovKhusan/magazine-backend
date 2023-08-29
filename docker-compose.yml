@@ -1,0 +1,51 @@
+services:
+  laravel-docker:
+    container_name: laravel-docker
+    build: .
+    volumes:
+      - ./www/task:/var/www/html
+    ports:
+      - 9003:80
+  fpm:
+    build:
+      context: .
+      dockerfile: ./docker/Fpm.Dockerfile
+    volumes:
+      - ./www:/var/www
+    links:
+      - mysql_db
+  nginx:
+    build:
+      context: .
+      dockerfile: ./docker/Nginx.Dockerfile
+    ports:
+      - 8098:80
+    links:
+      - fpm
+    volumes:
+      - ./www:/var/www
+  mysql_db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: taravel_docker
+    ports:
+      - 3306:3306
+  
+  phpmyadmin:
+    image: phpmyadmin:latest
+    ports:
+      - 9001:80
+    environment:
+      - PMA_ARBITRARY=1
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+
+  redis-commander:
+    image: rediscommander/redis-commander
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - 8081:8081
